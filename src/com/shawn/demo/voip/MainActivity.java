@@ -46,11 +46,11 @@ public class MainActivity extends Activity
 
 	// private Socket socket;
 
-	private EditText sendIP, sendport, recvPort,et_ec_buffer_size;
+	private EditText sendIP, sendport, recvPort, et_ec_buffer_size;
 	private Button startButton, stopButton, exitButton;
 	private TextView infoTV;
 
-	private MediaService mMediaService;
+	private MediaService mMediaService = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -75,7 +75,7 @@ public class MainActivity extends Activity
 		sendIP = (EditText) findViewById(R.id.et_Send_ip);
 		sendport = (EditText) findViewById(R.id.et_send_port);
 		recvPort = (EditText) findViewById(R.id.et_recv_port);
-		et_ec_buffer_size = (EditText)findViewById(R.id.et_ec_buffer);
+		et_ec_buffer_size = (EditText) findViewById(R.id.et_ec_buffer);
 
 		infoTV = (TextView) findViewById(R.id.tv_info);
 
@@ -86,7 +86,7 @@ public class MainActivity extends Activity
 		exitButton = (Button) findViewById(R.id.btn_exit);
 
 		mMediaService = new MediaService();
-		
+
 		TelephonyManager tm = (TelephonyManager) MainActivity.this.getSystemService(TELEPHONY_SERVICE);
 		infoTV.setText("Wifi Mac = " + getLocalMacAddress(MainActivity.this) + "\ngetMac = " + getMac()
 				+ "\nDevice ID = " + tm.getDeviceId());
@@ -102,14 +102,14 @@ public class MainActivity extends Activity
 				int localport = Integer.parseInt(recvPort.getText().toString());
 				Log.i(TAG, "Dst IP is " + ipAddr + " Wifi Mac:" + getLocalMacAddress(MainActivity.this));
 				Log.i(TAG, "getMac() >>> " + getMac());
-				
+
 				if (isStarted == true) {
 					Toast.makeText(MainActivity.this, "Already connected", Toast.LENGTH_SHORT).show();
 					return;
 				}
 				if (isIpAddr(ipAddr)) {
 					int ec_buffer_pkgs = Integer.parseInt(et_ec_buffer_size.getText().toString());
-					mMediaService.startAudio(ipAddr, 101, 8000, remotePort, localport,ec_buffer_pkgs);
+					mMediaService.startAudio(ipAddr, 101, 8000, remotePort, localport, ec_buffer_pkgs);
 					isStarted = true;
 					startButton.setEnabled(false);
 					stopButton.setEnabled(true);
