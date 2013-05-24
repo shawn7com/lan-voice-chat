@@ -1,0 +1,80 @@
+package com.sea.chapter6_5;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+
+public class MainActivity extends Activity {
+
+	public static final int MENU_START_ID = Menu.FIRST;
+	public static final int MENU_STOP_ID = Menu.FIRST + 1;
+	public static final int MENU_EXIT_ID = Menu.FIRST + 2;
+
+	private AudioWriter audioWriter;
+	private AudioReader AudioReader;
+	private Socket socket;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main);
+	}
+
+	public boolean onCreateOptionsMenu(Menu aMenu) {
+		boolean res = super.onCreateOptionsMenu(aMenu);
+
+		aMenu.add(0, MENU_START_ID, 0, "START");
+		aMenu.add(0, MENU_STOP_ID, 0, "STOP");
+		aMenu.add(0, MENU_EXIT_ID, 0, "EXIT");
+
+		return res;
+	}
+
+	public boolean onOptionsItemSelected(MenuItem aMenuItem) {
+		switch (aMenuItem.getItemId()) {
+		case MENU_START_ID: {
+			try {
+				if (socket == null) {
+					socket = new Socket(InetAddress.getByName("192.168.0.116"),
+							54321);
+					audioWriter = new AudioWriter();
+					AudioReader = new AudioReader();
+
+					audioWriter.init(socket);
+					AudioReader.init(socket);
+
+					audioWriter.start();
+					AudioReader.start();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
+			break;
+		case MENU_STOP_ID: {
+			audioWriter.free();
+			AudioReader.free();
+
+			audioWriter = null;
+			AudioReader = null;
+		}
+			break;
+		case MENU_EXIT_ID: {
+			int pid = android.os.Process.myPid();
+			android.os.Process.killProcess(pid);
+		}
+			break;
+		default:
+			break;
+		}
+
+		return super.onOptionsItemSelected(aMenuItem);
+	}
+}

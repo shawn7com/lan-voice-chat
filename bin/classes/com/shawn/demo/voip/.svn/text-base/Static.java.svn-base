@@ -1,0 +1,5 @@
+package com.sea.chapter6_5;
+
+public class Static {
+	public final static int SAMPLERATEINHZ = 8000;
+}

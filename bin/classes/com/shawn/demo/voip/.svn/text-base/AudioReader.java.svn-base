@@ -1,0 +1,73 @@
+package com.sea.chapter6_5;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.net.Socket;
+
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
+import android.util.Log;
+
+public class AudioReader extends Thread {
+	protected AudioTrack audioTrack;
+	protected int bufferSize;
+	protected byte[] buffer;
+	protected boolean isRunning;
+	private Socket socket;
+	private DataInputStream dataInputStream;
+
+	public void init(Socket socket) {
+		try {
+			this.socket = socket;
+			dataInputStream = new DataInputStream(socket.getInputStream());
+
+			isRunning = true;
+
+			bufferSize = AudioTrack.getMinBufferSize(Static.SAMPLERATEINHZ,
+					AudioFormat.CHANNEL_CONFIGURATION_MONO,
+					AudioFormat.ENCODING_PCM_16BIT);
+			Log.i("chapter6_5_w", "AudioTrack bufferSize=" + bufferSize);
+			audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, Static.SAMPLERATEINHZ,
+					AudioFormat.CHANNEL_CONFIGURATION_MONO,
+					AudioFormat.ENCODING_PCM_16BIT, bufferSize,
+					AudioTrack.MODE_STREAM);
+
+			buffer = new byte[bufferSize];
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void free() {
+		isRunning = false;
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+			Log.d("sleep exceptions...\n", "");
+		}
+	}
+
+	public void run() {
+ 		audioTrack.play();
+		while (isRunning) {
+			try {
+				dataInputStream.read(buffer);
+ 				audioTrack.write(buffer, 0, buffer.length);
+ 				audioTrack.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		audioTrack.stop();
+		audioTrack = null;
+		try {
+			dataInputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}

@@ -1,0 +1,74 @@
+package com.sea.chapter6_5;
+
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.LinkedList;
+
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
+import android.util.Log;
+
+public class AudioWriter extends Thread {
+
+	protected AudioRecord audioRecord;
+	protected int bufferSize;
+	protected byte[] buffer;
+	protected boolean isRunning;
+	protected Socket socket;
+	protected DataOutputStream dataOutputStream;
+
+	public void run() {
+		try {
+			audioRecord.startRecording();
+			while (isRunning) {
+				audioRecord.read(buffer, 0, bufferSize);
+				dataOutputStream.write(buffer);
+			}
+
+			audioRecord.stop();
+			audioRecord = null;
+			buffer = null;
+			dataOutputStream.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void init(Socket socket) {
+		bufferSize = AudioRecord.getMinBufferSize(Static.SAMPLERATEINHZ,
+				AudioFormat.CHANNEL_CONFIGURATION_MONO,
+				AudioFormat.ENCODING_PCM_16BIT);
+		Log.i("chapter6_5_w", "AudioRecord bufferSize=" + bufferSize);
+
+		audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, Static.SAMPLERATEINHZ,
+				AudioFormat.CHANNEL_CONFIGURATION_MONO,
+				AudioFormat.ENCODING_PCM_16BIT, bufferSize);
+
+		buffer = new byte[bufferSize];
+
+		isRunning = true;
+
+		try {
+			this.socket = socket;
+			dataOutputStream = new DataOutputStream(socket.getOutputStream());
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void free() {
+		isRunning = false;
+		try {
+			Thread.sleep(1000);
+		} catch (Exception e) {
+			Log.d("sleep exceptions...\n", "");
+		}
+	}
+}
